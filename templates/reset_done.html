@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <title>Password Reset Done - Toiler</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="icon" type="image/png" href="{% static 'assets/images/favicon-32.png'%}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'mainlogin.css' %}">
+
+</head>
+<body>
+<div class="limiter">
+    <div class="container-login100">
+        <div class="card">
+            <div class="row" style="margin: 0">
+                <div class="px-3 px-sm-5 pt-5 pb-4 py-md-5">
+                    <span class="login100-form-title">
+                    Password Reset Complete
+                    </span>
+                    Your password have been set. You may go ahead and login now.
+                    <div class="container-login100-form-btn">
+                        <a href="{% url 'login' %}">
+                            <button class="login100-form-btn" style="min-width: 150px">
+                            Login
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{#<script src="{% static '/assets/scripts/loginjs.js'%}"></script>#}
+
+</body>
+</html>
