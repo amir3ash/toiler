@@ -40,56 +40,56 @@ class TestCreateTeam(GanttMixin, APITestCase):
     def test_without_login(self):
         msg = f'Request on "{self.team_list}" without credentials must return 403 status code.'
         response = self.client.get(self.team_list)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.head(self.team_list)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.post(self.team_list)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.put(self.team_list)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.patch(self.team_list)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.options(self.team_list)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.trace(self.team_list)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.delete(self.team_list)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         url = reverse('gantt:project-detail', kwargs={'pk': 1})
 
         msg = f'Request on "{url}" without credentials must return 403 status code.'
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.head(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.put(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.patch(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.options(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.trace(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg)
 
     def test_create_team(self):
         self.client.force_login(self.user)
@@ -223,7 +223,7 @@ class TestTeamGet(GanttMixin, APITestCase):
 
     def test_get_team(self):
         response = self.client.get(self.team_1)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -251,7 +251,7 @@ class TestTeamGet(GanttMixin, APITestCase):
             'name': 'amir',
             'project': 1
         })
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -295,7 +295,7 @@ class TestTeamGet(GanttMixin, APITestCase):
         response = self.client.patch(self.team_1, {
             'name': 'amir',
         })
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -333,7 +333,7 @@ class TestTeamGet(GanttMixin, APITestCase):
 
     def test_delete_team(self):
         response = self.client.delete(self.team_1)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 

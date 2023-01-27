@@ -113,7 +113,7 @@ class TestCreateAssigned(GanttMixin, APITestCase):
             'activity': '',
             'user': ''
         })
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 

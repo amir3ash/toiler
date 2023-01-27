@@ -4,9 +4,11 @@ from functools import wraps
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import LoginView, LogoutView
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -16,6 +18,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken
 
 from user.forms import RegisterForm, AvatarForm
 from user.models import TempUser
@@ -252,6 +255,47 @@ def register(request):
             'recaptcha_site_key': settings.RECAPTCHA_SITE_KEY
         }
         return render(request, 'register.html', context=context)
+
+
+_access_cookie_name = settings.SIMPLE_JWT['AUTH_COOKIE']
+
+
+class JWTLoginView(LoginView):
+    """
+    Display the login form and handle the login action.
+    """
+
+    token_class = AccessToken
+    access_cookie_name = _access_cookie_name
+    secure_cookie = True
+    http_only_cookie = True
+    samesite_cookie = 'Lax'
+    domain_cookie = None
+
+    def form_valid(self, form):
+        """Security check complete. Log the user in."""
+        auth_login(self.request, form.get_user())
+
+        access: AccessToken = self.token_class.for_user(form.get_user())
+
+        response = HttpResponseRedirect(self.get_success_url())
+
+        response.set_cookie(self.access_cookie_name, str(access), max_age=access.lifetime, secure=self.secure_cookie,
+                            httponly=self.http_only_cookie, samesite=self.samesite_cookie)
+
+        return response
+
+
+class JWTLogoutView(LogoutView):
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        # remove jwt from cookie
+        response.delete_cookie(_access_cookie_name)
+        return response
+
+    get = post  # removed in django 5. Get method is deprecated.
 
 
 # not work. vulnerable to IP Spoofing

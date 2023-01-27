@@ -86,7 +86,7 @@ class TestActivityCreate(GanttMixin, APITestCase):
 
     def test_create(self):
         response = self.client.post(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -548,7 +548,7 @@ class TestActivity(GanttMixin, APITestCase):
         url = reverse('gantt:activity-detail', kwargs={'pk': self.activity1.id})
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 

@@ -58,7 +58,7 @@ class TestTaskCreate(GanttMixin, APITestCase):
         url = self.url
 
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -503,7 +503,7 @@ class TestTask(GanttMixin, APITestCase):
         url = reverse('gantt:task-list', kwargs={'proj_pk': self.project1.id})
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -522,7 +522,7 @@ class TestTask(GanttMixin, APITestCase):
         url = reverse('gantt:task-list', kwargs={'proj_pk': self.project2.id})
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.test_user2)
         # user 't2' is project manager of other project and his is not employee of 'project2'
@@ -602,7 +602,7 @@ class TestTask(GanttMixin, APITestCase):
         url = reverse('gantt:task-detail', kwargs={'pk': task.id})
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -646,7 +646,7 @@ class TestTask(GanttMixin, APITestCase):
         url = reverse('gantt:task-detail', kwargs={'pk': self.task1.id})
 
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -659,7 +659,7 @@ class TestTask(GanttMixin, APITestCase):
         url = reverse('gantt:task-detail', kwargs={'pk': task.id})
 
         response = self.client.put(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -716,7 +716,7 @@ class TestTask(GanttMixin, APITestCase):
         url = reverse('gantt:task-detail', kwargs={'pk': task.id})
 
         response = self.client.patch(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -786,7 +786,7 @@ class TestTask(GanttMixin, APITestCase):
         url = reverse('gantt:task-detail', kwargs={'pk': self.task1.id})
 
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         self.assertTrue(Task.objects.filter(id=self.task1.id).exists())
 
         self.client.force_login(self.test_user2)

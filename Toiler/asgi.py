@@ -32,7 +32,7 @@ def middleware_stack(inner):
 
 
 application = ProtocolTypeRouter({
-    # "http": django_asgi_app,
+    "http": django_asgi_app,
     "websocket":
         HandleRouteNotFoundMiddleware(
             middleware_stack(

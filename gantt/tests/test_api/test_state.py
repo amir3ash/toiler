@@ -54,10 +54,10 @@ class TestStateCreate(GanttMixin, APITestCase):
 
     def test_without_login(self):
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         response = self.client.post(self.url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create(self):
         self.client.force_login(self.user)
@@ -192,7 +192,7 @@ class TestState(GanttMixin, APITestCase):
         url = reverse('gantt:state-detail', kwargs={'pk': self.state1.id})
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -289,7 +289,7 @@ class TestState(GanttMixin, APITestCase):
         url = reverse('gantt:state-detail', kwargs={'pk': self.state1.id})
 
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(response.data, {
             'detail': 'Authentication credentials were not provided.'
         })

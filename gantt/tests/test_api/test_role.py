@@ -52,7 +52,7 @@ class TestCreateRole(GanttMixin, APITestCase):
             'project': 1,
             'name': 'nothing'
         })
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -251,7 +251,7 @@ class TestRole(GanttMixin, APITestCase):
 
     def test_get_role(self):
         response = self.client.get(self.role_1)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -282,7 +282,7 @@ class TestRole(GanttMixin, APITestCase):
             'name': 'amir\'s role',
             'project': 1
         })
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -365,7 +365,7 @@ class TestRole(GanttMixin, APITestCase):
         response = self.client.patch(self.role_1, {
             'name': 'amir',
         })
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -413,7 +413,7 @@ class TestRole(GanttMixin, APITestCase):
 
     def test_delete_role(self):
         response = self.client.delete(self.role_1)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 

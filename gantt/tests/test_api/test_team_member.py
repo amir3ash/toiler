@@ -111,7 +111,7 @@ class TestCreateTeamMember(GanttMixin, APITestCase):
 
     def test_create_team_member(self):
         response = self.client.post(self.team_member_url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -226,7 +226,7 @@ class TestTeamMember(GanttMixin, APITestCase):
     def test_get_team_member(self):
         url = reverse('gantt:team-member-detail', kwargs={'pk': self.member1.id})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -254,7 +254,7 @@ class TestTeamMember(GanttMixin, APITestCase):
     def test_put_team_member(self):
         url = reverse('gantt:team-member-detail', kwargs={'pk': self.member1.id})
         response = self.client.put(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -323,7 +323,7 @@ class TestTeamMember(GanttMixin, APITestCase):
     def test_patch_team_member(self):
         url = reverse('gantt:team-member-detail', kwargs={'pk': self.member1.id})
         response = self.client.patch(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.client.force_login(self.user)
 
@@ -405,7 +405,7 @@ class TestTeamMember(GanttMixin, APITestCase):
     def test_delete_team_member(self):
         url = reverse('gantt:team-member-detail', kwargs={'pk': self.member1.id})
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         self.assertTrue(TeamMember.objects.filter(id=self.member1.id).exists())
 
         self.client.force_login(self.user)

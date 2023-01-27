@@ -111,6 +111,10 @@ class User(AbstractUser):
         if not self.avatar:
             return  super().save(*args, **kwargs)
 
+        update_fields = kwargs.get('update_fields')
+        if update_fields and 'avatar' not in update_fields:
+            return  super().save(*args, **kwargs)
+
         image = Image.open(self.avatar)
 
         w = image.width
