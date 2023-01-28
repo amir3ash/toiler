@@ -5,14 +5,11 @@ from io import BytesIO
 import requests
 from PIL import Image
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.core.mail import send_mail
 from django.db import models
-from django.template import loader
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -108,13 +105,14 @@ class User(AbstractUser):
     avatar = models.ImageField(null=True, blank=True, upload_to=generate_img_path)
 
     def save(self, *args, **kwargs):
-        if not self.avatar:
-            return  super().save(*args, **kwargs)
-
         update_fields = kwargs.get('update_fields')
-        if update_fields and 'avatar' not in update_fields:
-            return  super().save(*args, **kwargs)
 
+        if self.avatar and update_fields and 'avatar' in update_fields:
+            self.update_avatar()
+
+        return super().save(*args, **kwargs)
+
+    def update_avatar(self):
         image = Image.open(self.avatar)
 
         w = image.width
@@ -140,5 +138,3 @@ class User(AbstractUser):
         name = f'{uuid.uuid4().hex}.webp'
 
         self.avatar = InMemoryUploadedFile(output, 'avatar', name, 'image/webp', sys.getsizeof(output), None)
-
-        return super().save(*args, **kwargs)
