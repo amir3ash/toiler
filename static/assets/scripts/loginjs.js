@@ -16,10 +16,9 @@
     return check;
   }
   $('.login100-form-btn').on('click', function () {
-    let he2=he();
-     if(he2) {
-       grecaptcha.execute();
-     }
+    const form = document.getElementById('form')
+    if (he())
+      form.submit();
   });
   const input = $('.validate-input .input100');
   // $('.validate-form').on('click2', );

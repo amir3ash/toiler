@@ -2,6 +2,7 @@ from django.conf import settings
 from django.urls import path
 from user import views
 from django.contrib.auth import views as auth_views
+
 # from rest_framework_simplejwt.views import (
 #     TokenObtainPairView,
 #     TokenRefreshView,
@@ -9,8 +10,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('register', views.register, name='register'),
-    path('login', views.check_recaptcha(views.JWTLoginView.as_view(template_name='login.html',
-                                extra_context={'recaptcha_site_key': settings.RECAPTCHA_SITE_KEY})), name='login'),
+    path('login', views.JWTLoginView.as_view(template_name='login.html'), name='login'),
     path('logout', views.JWTLogoutView.as_view(), name='logout'),
     path('account', views.SettingApiView.as_view(), name='account_info'),
     path('change_password', views.ChangePassword.as_view(), name='change_pass'),

@@ -18,21 +18,6 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="{% static 'mainlogin.css' %}">
-
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script>
-        function onSubmit() {
-            if (grecaptcha.getResponse()) {
-                // 2) finally sending form data
-                document.getElementById("form").submit();
-            }else{
-                // 1) Before sending we must validate captcha
-                grecaptcha.reset();
-                grecaptcha.execute();
-            }
-        }
-    </script>
-
 </head>
 <body>
 <div class="limiter">
@@ -92,12 +77,6 @@
                         </div>
                         <input type="hidden" name="next" value="">
                         <div class="container-login100-form-btn">
-                            <div id='recaptcha' class="g-recaptcha"
-                              data-sitekey="{{ recaptcha_site_key }}"
-                              data-callback="onSubmit"
-                              data-size="invisible"
-                                data-badge="bottomright"></div>
-
                             <button type="button" class="login100-form-btn">
                                 Create Account
                             </button>

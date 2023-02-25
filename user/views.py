@@ -206,12 +206,11 @@ def check_recaptcha(view_func):
     return _wrapped_view
 
 
-@check_recaptcha
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
 
-        if request.recaptcha_is_valid and form.is_valid():
+        if form.is_valid():
             same_user = TempUser.objects.filter(username=form.cleaned_data.get('username'),
                                                 email=form.cleaned_data.get('email'))[:1]
             if same_user:
@@ -251,10 +250,7 @@ def register(request):
         # return JsonResponse({"msg": "username or password must be longer"}, status=status.HTTP_406_NOT_ACCEPTABLE)
         return redirect(reverse('valid_email_sent'))
     if request.method == 'GET':
-        context = {
-            'recaptcha_site_key': settings.RECAPTCHA_SITE_KEY
-        }
-        return render(request, 'register.html', context=context)
+        return render(request, 'register.html',)
 
 
 _access_cookie_name = settings.SIMPLE_JWT['AUTH_COOKIE']

@@ -18,20 +18,7 @@
 {#    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />#}
 
     <link rel="stylesheet" type="text/css" href="{% static 'mainlogin.css' %}">
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script>
-        function onSubmit() {
-            {#e.preventDefault();#}
-            if (grecaptcha.getResponse()) {
-                // 2) finally sending form data
-                document.getElementById("form").submit();
-            }else{
-                // 1) Before sending we must validate captcha
-                grecaptcha.reset();
-                grecaptcha.execute();
-            }
-        }
-    </script>
+
 </head>
 <body>
 <div class="limiter">
@@ -66,13 +53,8 @@
                     </span>
                 </div>
                 <input type="hidden" name="next" value="{{ next | escape}}">
-                <div id='recaptcha' class="g-recaptcha"
-                              data-sitekey="{{ recaptcha_site_key }}"
-                              data-callback="onSubmit"
-                              data-size="invisible"
-                                data-badge="bottomright"></div>
                 <div class="container-login100-form-btn">
-                    <button type="button" class="login100-form-btn">
+                    <button type="submit" class="login100-form-btn">
                         Login
                     </button>
                 </div>
@@ -94,7 +76,6 @@
         </div>
     </div>
 </div>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 {#<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>#}
 
@@ -102,7 +83,7 @@
 {#    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>#}
 {#<script src="https://unpkg.com/@popperjs/core@2"></script>#}
 {#<script src="{% static '/assets/scripts/tilt.js'%}"></script>#}
-<script src="/static/assets/scripts/main.js"></script>
+{#<script src="/static/assets/scripts/main.js"></script>#}
 {% comment %}<script>
     $('.js-tilt').tilt({
         scale: 1.1
