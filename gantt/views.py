@@ -364,7 +364,11 @@ class AutoSchedule(views.APIView):
         for activity in activities:
             self.activity_map[activity.id] = activity
 
+        day_zero = make_aware(datetime.datetime.utcfromtimestamp(0))
+        day_infinity = make_aware(datetime.datetime.today() + datetime.timedelta(weeks=1000))
         for task in tasks:
+            task.planned_start_date = day_infinity
+            task.planned_end_date = day_zero
             self.task_map[task.id] = task
 
         activity_list = self._topological_sort(activities)
@@ -395,7 +399,7 @@ class AutoSchedule(views.APIView):
             activity.planned_end_date = activity_early_final
 
             task = self.task_map[activity.task_id]
-            task.planned_start_date = max(project_start_date, activity_early_start)
+            task.planned_start_date = min(max(project_start_date, activity_early_start), task.planned_start_date)
             task.planned_end_date = max(min(project_end_date, activity_early_final), task.planned_end_date)
 
         tasks = self.task_map.values()
