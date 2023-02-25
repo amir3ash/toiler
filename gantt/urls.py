@@ -33,4 +33,5 @@ app_name = 'gantt'
 urlpatterns = [
     path('', include(router.urls)),
     path('all/<int:pk>/', views.GetAll.as_view(), name='get_project_w_related'),
+    path('auto-schedule/<int:pk>/', views.AutoSchedule.as_view(), name="auto_schedule")
 ]

@@ -1,46 +1,16 @@
-from json import dumps as json_dumps
 from logging import getLogger
-from typing import Type, Union
 
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from redis import StrictRedis
 from .models import Project, Activity, Task, State, Assigned
+from .notifier import notify
 from .views import GetAll
 
 logger = getLogger(__name__)
 cache_str = GetAll.cache_pre_key
 
 del GetAll
-
-red = StrictRedis(host='127.0.0.1', port=6379)
-
-_EVENTS = {"added", "updated", "deleted"}
-
-
-def notify(event: str, obj_type: str, object_id: int, parent_id: Union[int, Type[int]]):
-    """
-    publish event to **"changes"** redis channel.
-
-    :param parent_id:
-    :param object_id:
-    :param event: "added" or "updated" or "deleted"
-    :param obj_type:
-    :return: None
-    """
-    if event not in _EVENTS:
-        raise Exception(f"event not in {_EVENTS}")
-
-    data_capsule = {
-        "event": event,
-        "type": obj_type,
-        "id": object_id,
-        "parent": parent_id
-    }
-
-    str_json = json_dumps(data_capsule)
-    red.publish('changes', str_json)
 
 
 def delete_cache(activity_id):

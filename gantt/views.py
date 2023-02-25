@@ -5,16 +5,19 @@ from django.core.cache import cache
 from django.db.models import Prefetch, Window
 from django.db.models.functions import RowNumber
 from django.utils.decorators import method_decorator
+from django.utils.timezone import make_aware
 from django_cte import With
 from django_filters.rest_framework import FilterSet
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, mixins, views
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from gantt.models import ChertActivity
 from gantt.permissons import IsProjectManagerOrReadOnly, IsProjectManagerOrReadOnlyComment
 from gantt.serializers import *
+from gantt.notifier import BulkNotify
 from gantt.tests.base import Timer
 
 timer = Timer()
@@ -197,7 +200,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
 # - - -  - - -- - - - - - - -- - - - - - -- - - - - -
-def project_exists(project_pk, user):
+def project_exists(project_pk, user) -> bool:
+    """ :returns True if user is project_manager or a team_member of the project, else False"""
     return Project.objects.filter(
         Q(project_manager=user) | Q(team__teammember__user=user), id=project_pk
     ).exists()
@@ -302,7 +306,7 @@ class GetAll(views.APIView):
     @swagger_auto_schema(responses={200: ProjectWithRelatedSerializer()})
     def get(self, request, pk):
         project_pk = pk
-        if True or project_exists(project_pk, self.request.user):
+        if project_exists(project_pk, self.request.user):
 
             activities = self.get_activity_ids(project_pk)
 
@@ -328,7 +332,7 @@ class GetAll(views.APIView):
 
         cte = With(
             ChertActivity.objects.filter(task__project_id=project_id)
-            .annotate(
+                .annotate(
                 row_number=Window(
                     expression=RowNumber(),
                     partition_by=[F('task_id')],
@@ -342,3 +346,93 @@ class GetAll(views.APIView):
 
         cache.set(cache_key, result)
         return result
+
+
+class AutoSchedule(views.APIView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.activity_map = dict()
+        self.task_map = dict()
+
+    def put(self, request, pk):
+        project_pk = pk
+        project = get_object_or_404(Project.objects.filter(id=project_pk, project_manager=request.user))
+
+        activities: 'QuerySet[Activity]' = Activity.objects.filter(task__project_id=project_pk)
+        tasks = Task.objects.filter(project_id=project_pk)
+
+        for activity in activities:
+            self.activity_map[activity.id] = activity
+
+        for task in tasks:
+            self.task_map[task.id] = task
+
+        activity_list = self._topological_sort(activities)
+        self._early_path(project, activity_list)
+
+        return Response({})
+
+    def _early_path(self, project, activities):
+        project_start_date = datetime.datetime.fromordinal(project.planned_start_date.toordinal())
+        project_end_date = datetime.datetime.fromordinal(project.planned_end_date.toordinal())
+        project_start_date = make_aware(project_start_date)
+        project_end_date = make_aware(project_end_date)
+
+        for i in range(len(activities)):
+            activity = activities[i]
+            duration = activity.planned_end_date - activity.planned_start_date
+
+            activity_early_start = project_start_date
+            activity_early_final = project_start_date + duration
+
+            if activity.dependency_id:
+                d_ef = self.activity_map[activity.dependency_id].early_final
+                activity_early_start = d_ef
+                activity_early_final = d_ef + duration
+
+            activity.early_final = activity_early_final
+            activity.planned_start_date = activity_early_start
+            activity.planned_end_date = activity_early_final
+
+            task = self.task_map[activity.task_id]
+            task.planned_start_date = max(project_start_date, activity_early_start)
+            task.planned_end_date = max(min(project_end_date, activity_early_final), task.planned_end_date)
+
+        tasks = self.task_map.values()
+        Task.objects.bulk_update(tasks, fields=['planned_start_date', 'planned_end_date'])
+        Activity.objects.bulk_update(activities, fields=['planned_start_date', 'planned_end_date'])
+
+        self._notify_tasks_updated(tasks)
+        self._notify_activities_updated(activities)
+
+    def _topological_sort(self, activities):
+        stack = []
+        visited = set()
+
+        def traverse(activity):
+            if activity.id in visited:
+                return
+
+            if activity.dependency_id:
+                depend_activity = self.activity_map[activity.dependency_id]
+                traverse(depend_activity)
+
+            stack.append(activity)
+            visited.add(activity.id)
+
+        for act in activities:
+            traverse(act)
+
+        return stack
+
+    @staticmethod
+    def _notify_activities_updated(activities):
+        with BulkNotify('updated', 'activity') as b:
+            for activity in activities:
+                b.notify(activity.id, activity.task_id)
+
+    @staticmethod
+    def _notify_tasks_updated(tasks):
+        with BulkNotify('updated', 'task') as b:
+            for task in tasks:
+                b.notify(task.id, task.project_id)
