@@ -349,6 +349,9 @@ class GetAll(views.APIView):
 
 
 class AutoSchedule(views.APIView):
+    """
+    Schedules tasks and activities to the earliest possible plan.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.activity_map = dict()

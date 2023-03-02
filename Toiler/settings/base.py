@@ -106,6 +106,11 @@ CHANNEL_LAYERS = {
     },
 }
 
+NOTIFIER = {
+    'HOST': os.environ['NOTIFIER_HOST'],
+    'PORT': 6379
+}
+
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = {
