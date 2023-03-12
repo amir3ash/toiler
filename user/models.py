@@ -1,14 +1,8 @@
-import sys
-import uuid
-from io import BytesIO
-
 import requests
-from PIL import Image
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 from django.urls import reverse
 from django.utils.encoding import force_bytes
@@ -103,38 +97,3 @@ def generate_img_path(instance, filename):
 
 class User(AbstractUser):
     avatar = models.ImageField(null=True, blank=True, upload_to=generate_img_path)
-
-    def save(self, *args, **kwargs):
-        update_fields = kwargs.get('update_fields')
-
-        if self.avatar and update_fields and 'avatar' in update_fields:
-            self.update_avatar()
-
-        return super().save(*args, **kwargs)
-
-    def update_avatar(self):
-        image = Image.open(self.avatar)
-
-        w = image.width
-        h = image.height
-
-        width_height = min(h, w)
-
-        left = (w - width_height) // 2
-        top = (h - width_height) // 2
-        right = (w + width_height) // 2
-        bottom = (h + width_height) // 2
-
-        image = image.crop((left, top, right, bottom))
-
-        if width_height > 360:
-            image = image.resize((360, 360), Image.ANTIALIAS)
-
-        output = BytesIO()
-
-        image.save(output, 'WEBP', quality=50, optimize=True)
-        output.seek(0)
-
-        name = f'{uuid.uuid4().hex}.webp'
-
-        self.avatar = InMemoryUploadedFile(output, 'avatar', name, 'image/webp', sys.getsizeof(output), None)

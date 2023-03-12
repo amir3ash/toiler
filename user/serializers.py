@@ -1,11 +1,11 @@
 from django.contrib.auth import password_validation, get_user_model
 from django.contrib.auth.forms import PasswordChangeForm
-from django.core.files.images import get_image_dimensions
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import ModelSerializer, Serializer, CharField
 from storages.backends.s3boto3 import S3Boto3Storage
 
+from user.img_util import optimize_image, validate_image, ImageValidationError
 from user.models import User
 
 storage = S3Boto3Storage()
@@ -26,46 +26,28 @@ class UserSearchSerializer(UserSerializer):
 
 
 class AvatarSerializer(UserSerializer):
-    MAX_AVATAR_SIZE = 1024 * 1024 * 3
 
-    def validate_avatar(self, avatar: InMemoryUploadedFile):
+    @staticmethod
+    def validate_avatar(avatar: InMemoryUploadedFile):
         if avatar is None:
             return None
+
         try:
-            # validate content type
-            main, sub = avatar.content_type.split('/')
-            if not (main == 'image' and sub in ['jpeg', 'png']):
-                raise ValidationError(u'Please use a JPEG or PNG image.')
-
-            w, h = get_image_dimensions(avatar)
-
-            # validate dimensions
-            max_width = max_height = 9000
-            if w > max_width or h > max_height:
-                raise ValidationError(
-                    u'Please use an image that is '
-                    '%s x %s pixels or smaller.' % (max_width, max_height))
-
-            # validate file size
-            if len(avatar) > self.MAX_AVATAR_SIZE:
-                raise ValidationError(
-                    'Avatar file size may not exceed 3MB.')
-
-        except AttributeError:
-            """
-            Handles case when we are updating the user profile
-            and do not supply a new avatar
-            """
-            pass
+            validate_image(avatar)
+        except ImageValidationError as e:
+            raise ValidationError(e)
 
         return avatar
 
     def update(self, instance: User, validated_data):
-        # avatar: InMemoryUploadedFile = validated_data.get('avatar')
+        avatar: InMemoryUploadedFile = validated_data.get('avatar')
         instance_avatar_name = instance.avatar.name if instance.avatar else None
 
         if instance_avatar_name and storage.exists(instance_avatar_name):
             storage.delete(instance_avatar_name)
+
+        if avatar:
+            validated_data['avatar'] = optimize_image(avatar)
 
         return super(AvatarSerializer, self).update(instance, validated_data)
 

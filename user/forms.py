@@ -1,9 +1,9 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
-from django.core.files.images import get_image_dimensions
 
-from .models import TempUser, User
+from .img_util import optimize_image, validate_image, ImageValidationError
+from .models import User
 
 
 class RegisterForm(UserCreationForm):
@@ -38,34 +38,10 @@ class AvatarForm(forms.ModelForm):
         avatar = self.cleaned_data['avatar']
 
         try:
-            w, h = get_image_dimensions(avatar)
+            validate_image(avatar)
 
-            # validate dimensions
-            max_width = max_height = 1000
-            if w > max_width or h > max_height:
-                print(1)
-                raise forms.ValidationError(
-                    u'Please use an image that is '
-                    '%s x %s pixels or smaller.' % (max_width, max_height))
-
-            # validate content type
-            main, sub = avatar.content_type.split('/')
-            if not (main == 'image' and sub in ['jpeg', 'png']):
-                print(2)
-                raise forms.ValidationError(u'Please use a JPEG or PNG image.')
-
-            # validate file size
-            if len(avatar) > (20 * 1024):
-                print(3)
-                raise forms.ValidationError(
-                    u'Avatar file size may not exceed 20k.')
-
-        except AttributeError:
-            """
-            Handles case when we are updating the user profile
-            and do not supply a new avatar
-            """
-            pass
+        except ImageValidationError as e:
+            raise forms.ValidationError(e)
 
         return avatar
 
@@ -73,7 +49,9 @@ class AvatarForm(forms.ModelForm):
         if user is None:
             return
 
-        user.avatar = self.cleaned_data['avatar']
+        avatar = self.cleaned_data['avatar']
+        user.avatar = optimize_image(avatar)
+
         if commit:
             user.save(update_fields=['avatar'])
 
